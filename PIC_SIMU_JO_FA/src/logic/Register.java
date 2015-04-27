@@ -16,7 +16,7 @@ public class Register {
 	public Register(){
 		
 	//init Speicher---------------- Alex meinte hier gibt es noch ein Paar Register die sind zu Anfang nicht null
-	//----------------------------- müssen hier dann noch extra deklariert werden
+	//----------------------------- müssen hier dann noch extra deklariert werdenenn
 	for (int j=0;j<256;j++){
 		this.speicher[j]=0;
 	}
