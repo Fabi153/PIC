@@ -1,0 +1,159 @@
+package handler;
+
+import java.awt.Color;
+import java.awt.Component;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+
+import view.ViewBox;
+import logic.Interpreter;
+import logic.Register;
+
+public class Elementhandlers{
+	public static Register myRegister = new Register();
+	public static int var =0;
+	public static int pointerTable=0;
+	public static void buttonStart(int[] befehlscode){
+	
+	
+		
+		try {										//Exception abfangen, falls Start gedrückt wird ohne ein File zu laden.
+			while (true){ // Gehe alle Befehle durch
+				int pc= myRegister.getProgrammcounter();
+				System.out.println("Befehl " + Integer.toHexString(befehlscode[pc]) + ":");
+				Interpreter.befehlserkennung(befehlscode[pc]);
+				myRegister.printRegister();
+				updateTable();
+				//Thread.sleep(1000);
+				}
+			}
+			catch(NullPointerException e1) {System.out.println("Zuerst Befehlscode einlesen!"+ e1);}
+		
+		
+	}
+	
+	public static void buttonStep(int[] befehlscode){
+	
+	 //int zaehler = 0;	//sollte static sein, um Befehle hochzuzählen und beim nächsten Aufruf den aktuellen Befehl zu liefern
+	
+		try {										//Exception abfangen, falls Start
+			Interpreter.befehlserkennung(befehlscode[Elementhandlers.myRegister.getProgrammcounter()]);
+			myRegister.printRegister();
+			updateTable();
+			pointerTable = ViewBox.positionInStringArray[Elementhandlers.myRegister.getProgrammcounter()];
+			ViewBox.table.getColumn("Quellcode").setCellRenderer(new DefaultTableCellRenderer(){
+				Color originalColor = null;
+
+		        @Override
+		        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+		            DefaultTableCellRenderer renderer = (DefaultTableCellRenderer) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+		            if (originalColor == null) {
+		                originalColor = getBackground();
+		            }
+		            if (value == null) {
+		                renderer.setText("");
+		            } else {
+		                renderer.setText(value.toString());
+		            }
+
+		            if (row == pointerTable) {
+		                renderer.setBackground(Color.RED);
+		            } else {
+		                renderer.setBackground(originalColor); // Retore original color
+		            }
+		            return renderer;
+		        }
+			});
+			ViewBox.table.setRowSelectionInterval(pointerTable,pointerTable);
+			ViewBox.table.clearSelection();
+			
+			}
+			catch(NullPointerException e1) { System.out.println("Zuerst Befehlscode einlesen!" + e1);}
+	}
+	
+	private static void updateTable() {
+		Object[][] rows = new Object [32][9];
+		String[] columns = new String [9];
+		int count=0;
+		int[] registers =	Elementhandlers.myRegister.getRegisters(); 
+		//Column nummerieren
+		for (int i=0;i<32;i++){
+			rows[i][0]= Integer.toHexString(i);
+		}
+		columns[0]= "X";
+		for (int l=0;l<8;l++){
+			columns[l+1]= Integer.toHexString(l);
+		}
+		//Füllen der Daten
+		for(int k=0;k<32;k++){
+			for (int j=1;j<9;j++){
+				rows[k][j]=Integer.toHexString(registers[count]);
+				count++;
+			}
+		}
+		ViewBox.register_table.setModel(new DefaultTableModel(rows,columns));
+	}
+
+	public static void buttonLoad(){
+		
+		
+	}
+	
+	public static String[] loadFile(String filename, String dir){
+		try {
+			
+			int zeilennummer = 0;
+			int zeilenanzahl=0;
+			File sourcecode = new File(dir + "\\" + filename);
+			BufferedReader in = new BufferedReader(new FileReader(sourcecode));
+			String zeile = null;
+			ArrayList quellCodeArrayList= new ArrayList();
+			while ((zeile = in.readLine()) != null) {
+				//System.out.println(zeile);
+				quellCodeArrayList.add(zeile);
+				//System.out.println(quellcodeString);
+				zeilennummer++;
+			}
+			Object[] quellCodeObject= quellCodeArrayList.toArray();
+			String[] quellcodeStringArray = new String[quellCodeObject.length];
+			for (int i=0; i <quellCodeObject.length;i++){
+			quellcodeStringArray[i] = quellCodeObject[i].toString();
+			System.out.println(quellcodeStringArray[i]);
+			}
+			return quellcodeStringArray;	
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	public static int[] convertStringFileToIntFile(String[] stringquellcode){
+		int index=0;
+		for (int i=0;i<stringquellcode.length;i++){
+			char erstesZeichen= stringquellcode[i].charAt(0);
+			if(erstesZeichen != 32){
+				index++;
+				}
+			}
+		int[] befehlscode = new int[index];
+		int befehlscodenummerierung = 0;
+		for (int i=0;i<stringquellcode.length;i++){
+			char erstesZeichen= stringquellcode[i].charAt(0);
+			if(erstesZeichen != 32){
+				System.out.println(stringquellcode[i] + "hat keine Leerzeichen");
+				ViewBox.positionInStringArray[befehlscodenummerierung]= i;
+				String befehlsCodeinString= stringquellcode[i].substring(5, 9);
+				int temp= Integer.parseInt(befehlsCodeinString,16);
+				befehlscode[befehlscodenummerierung]= temp;
+				befehlscodenummerierung++;
+			} 
+		}
+	return befehlscode;
+	}
+}

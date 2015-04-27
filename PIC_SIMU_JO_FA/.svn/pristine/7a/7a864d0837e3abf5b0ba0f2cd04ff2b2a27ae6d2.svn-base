@@ -1,0 +1,97 @@
+package handler;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+
+import logic.Interpreter;
+import logic.Register;
+
+public class Elementhandlers{
+	public static Register myRegister = new Register();
+	public static void buttonStart(int[] befehlscode){
+		
+		int i;
+		
+		try {										//Exception abfangen, falls Start gedrückt wird ohne ein File zu laden.
+			for (i = 0; i<6; i++){ // Gehe alle Befehle durch
+				int pc= myRegister.getProgrammcounter();
+				System.out.println("Befehl " + Integer.toHexString(befehlscode[pc]) + ":");
+				Interpreter.befehlserkennung(befehlscode[pc]);
+				myRegister.printRegister();
+				}
+			}
+			catch(NullPointerException e1) {System.out.println("Zuerst Befehlscode einlesen!"+ e1);}
+		
+		
+	}
+	
+	public static void buttonStep(int[] befehlscode){
+	
+	 int zaehler = 0;	//sollte static sein, um Befehle hochzuzählen und beim nächsten Aufruf den aktuellen Befehl zu liefern
+	
+		try {										//Exception abfangen, falls Start gedrückt wird ohne ein File zu laden.
+			System.out.printf("%x ", befehlscode[zaehler]);
+			Interpreter.befehlserkennung(befehlscode[zaehler]);
+			}
+			catch(NullPointerException e1) { System.out.println("Zuerst Befehlscode einlesen!");}
+		zaehler++;
+	}
+	
+	public static void buttonLoad(){
+		
+		
+	}
+	
+	public static String[] loadFile(String filename, String dir){
+		try {
+			int zeilennummer = 0;
+			int zeilenanzahl=0;
+			File sourcecode = new File(dir + "\\" + filename);
+			BufferedReader in = new BufferedReader(new FileReader(sourcecode));
+			String zeile = null;
+			ArrayList quellCodeArrayList= new ArrayList();
+			while ((zeile = in.readLine()) != null) {
+				//System.out.println(zeile);
+				quellCodeArrayList.add(zeile);
+				//System.out.println(quellcodeString);
+				zeilennummer++;
+			}
+			Object[] quellCodeObject= quellCodeArrayList.toArray();
+			String[] quellcodeStringArray = new String[quellCodeObject.length];
+			for (int i=0; i <quellCodeObject.length;i++){
+			quellcodeStringArray[i] = quellCodeObject[i].toString();
+			System.out.println(quellcodeStringArray[i]);
+			}
+			return quellcodeStringArray;	
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	public static int[] convertStringFileToIntFile(String[] stringquellcode){
+		int index=0;
+		for (int i=0;i<stringquellcode.length;i++){
+			char erstesZeichen= stringquellcode[i].charAt(0);
+			if(erstesZeichen != 32){
+				index++;
+				}
+			}
+		int[] befehlscode = new int[index];
+		int befehlscodenummerierung = 0;
+		for (int i=0;i<stringquellcode.length;i++){
+			char erstesZeichen= stringquellcode[i].charAt(0);
+			if(erstesZeichen != 32){
+				System.out.println(stringquellcode[i] + "hat keine Leerzeichen");
+				String befehlsCodeinString= stringquellcode[i].substring(5, 9);
+				int temp= Integer.parseInt(befehlsCodeinString,16);
+				befehlscode[befehlscodenummerierung]= temp;
+				befehlscodenummerierung++;
+			} 
+		}
+	return befehlscode;
+	}
+}
+

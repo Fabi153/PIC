@@ -1,0 +1,94 @@
+package logic;
+
+public class Register {
+
+	public int[][] speicher= new int[2][128];
+	public int wRegister;
+	public Register(){
+		
+	//init Speicher---------------- Alex meinte hier gibt es noch ein Paar Register die sind zu Anfang nicht null
+	//----------------------------- müssen hier dann noch extra deklariert werden
+	for (int i=0;i<2;i++){
+		for (int j=0;j<80;j++){
+			this.speicher[i][j]=0;
+		}
+	}
+	//init programcounter---------- Zwar in den Registern enthalten, hier ist jezz die Frage ob wir es so Redundant lassen sollen
+	//----------------------------- oder ob wir nur mit Speicher-Array arbeiten sollen
+	this.wRegister=0;
+	}
+	
+	public void setProgrammcounter(int givenPC){
+		this.speicher[0][2]= givenPC;
+		this.speicher[1][2]= givenPC;
+	}
+	
+	
+	public int getProgrammcounter(){
+		return this.speicher[0][2];
+	}
+	public int getWRegister(){
+		return this.wRegister;
+	}
+	public void setWRegister(int result){
+		this.wRegister=result;
+	}
+	public void setRegister(int f, int result){
+		this.speicher[0][f]= result;
+		this.speicher[1][f]= result;
+	}
+	public int getRegisterValue(int f){
+	//TODO: Register 0 speziell !!! (FSR)
+	return this.speicher[0][f];
+	}
+	public void increaseProgrammcounter(){
+		this.speicher[0][2]++;
+		this.speicher[1][2]++;
+	}
+
+	public void printRegister() {
+		for  (int j=0; j <128;j++){
+			System.out.println("Register: " + j + " : " +speicher[0][j]);
+			}
+		System.out.println("WRegister: " + wRegister);
+	}
+	public void setZFlag(){
+		for (int i=0;i<2;i++){
+			int statusregister= this.speicher[i][3];
+			int result = statusregister|0b00000100;
+			this.speicher[i][3]= result;
+		}
+	}
+	public void clearZFlag(){
+		for (int i=0;i<2;i++){
+			int statusregister= this.speicher[i][3];
+			int result = statusregister & 0b11111011;
+			this.speicher[i][3]= result;
+		}
+	}
+	public void setCFlag(){
+		for (int i=0;i<2;i++){
+			int statusregister= this.speicher[i][3];
+			int result = statusregister|0b00000001;
+			this.speicher[i][3]= result;
+		}
+	}
+	public int getCFlag(){
+		int statusReg =this.speicher[0][3];
+		int result= statusReg & 0b00000001;
+		
+		if(result == 0){
+			return 0;	
+		}
+		else{
+		return 1;
+		}		
+	}
+	public void clearCFlag(){
+		for (int i=0;i<2;i++){
+			int statusregister= this.speicher[i][3];
+			int result = statusregister & 0b11111110;
+			this.speicher[i][3]= result;
+		}
+	}
+}

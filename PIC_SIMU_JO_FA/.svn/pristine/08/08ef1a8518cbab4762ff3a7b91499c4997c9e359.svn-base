@@ -1,0 +1,409 @@
+package logic;
+
+import handler.*;
+public class Execution{
+	
+	public static void	startBefehlADDWF(int f, int d){
+		int fRegister = Elementhandlers.myRegister.getRegisterValue(f);
+		int wRegister =Elementhandlers.myRegister.getWRegister();
+		int result = wRegister + fRegister;
+		//TODO: Effected C,DC,Z
+		insertInRegister(result,f,d);
+		Elementhandlers.myRegister.increaseProgrammcounter();
+		return;
+	}
+	public static void	startBefehlANDWF(int f, int d){
+		int fRegister = Elementhandlers.myRegister.getRegisterValue(f);
+		int wRegister = Elementhandlers.myRegister.getWRegister();
+		int result = wRegister & fRegister;
+		checkZFlag(result);
+		insertInRegister(result,f,d);
+		Elementhandlers.myRegister.increaseProgrammcounter();
+		return;
+	}
+	public static void	startBefehlCLRF(int f){
+		int result = 0;
+		checkZFlag(result);
+		insertInRegister(result,f,1);
+		Elementhandlers.myRegister.increaseProgrammcounter();
+		return;
+	}
+	public static void	startBefehlCLRW(){
+		int result = 0;
+		checkZFlag(result);
+		insertInRegister(result,1337,0);
+		Elementhandlers.myRegister.increaseProgrammcounter();
+		return;
+	}
+	public static void	startBefehlCOMF(int f,int d){
+		int fRegister = Elementhandlers.myRegister.getRegisterValue(f);
+		int result= ~fRegister;
+		result = result & 0xFF;
+		checkZFlag(result);
+		insertInRegister(result,f,d);
+		Elementhandlers.myRegister.increaseProgrammcounter();
+		return;
+	}
+	public static void	startBefehlDECF(int f, int d){
+		int fRegister = Elementhandlers.myRegister.getRegisterValue(f);
+		//TODO: Was wenn 0-1?
+		if(fRegister==0){}
+		int result = fRegister- 1;
+		checkZFlag(result);
+		insertInRegister(result,f,d);
+		Elementhandlers.myRegister.increaseProgrammcounter();
+		return;
+	}
+	public static void	startBefehlDECFSZ(int f,int d){
+		int fRegister = Elementhandlers.myRegister.getRegisterValue(f);
+		//TODO: Was wenn 0-1?
+		if(fRegister==0){}
+		int result = fRegister- 1;
+		insertInRegister(result,f,d);
+		Elementhandlers.myRegister.increaseProgrammcounter();
+		if (result==0){
+		//TODO: nächster Befehl durch NOP ersetzen
+			startBefehlNOP();
+		}
+		return;
+	}
+	public static void	startBefehlINCF(int f, int d){
+		int fRegister = Elementhandlers.myRegister.getRegisterValue(f);
+		int result= fRegister + 1;
+		if (result>255){
+		result =0;
+		}
+		checkZFlag(result);
+		insertInRegister(result,f,d);
+		Elementhandlers.myRegister.increaseProgrammcounter();
+		return;
+	}
+	public static void	startBefehlINCFSZ(int f, int d){
+		int fRegister = Elementhandlers.myRegister.getRegisterValue(f);
+		int result = fRegister +1;
+		insertInRegister(result,f,d);
+		Elementhandlers.myRegister.increaseProgrammcounter();
+		if (result<255){
+			result=0;
+			//TODO: nächster Befehl durch NOP ersetzen 
+			startBefehlNOP();
+		}
+		return;
+	}
+	public static void	startBefehlIORWF(int f, int d){
+		int fRegister = Elementhandlers.myRegister.getRegisterValue(f);
+		int wRegister = Elementhandlers.myRegister.getWRegister();
+		int result = fRegister|wRegister;
+		checkZFlag(result);
+		insertInRegister(result,f,d);
+		Elementhandlers.myRegister.increaseProgrammcounter();
+		return;
+	}
+	public static void	startBefehlMOVF(int f, int d){
+		int fRegister = Elementhandlers.myRegister.getRegisterValue(f);
+		int result= fRegister;
+		checkZFlag(result);
+		insertInRegister(result,f,d);
+		Elementhandlers.myRegister.increaseProgrammcounter();
+		return;
+	}
+	public static void	startBefehlMOVWF(int f){
+		int wRegister = Elementhandlers.myRegister.getWRegister();		
+		int result= wRegister;
+		insertInRegister(result,f,1);
+		Elementhandlers.myRegister.increaseProgrammcounter();
+		return;
+	}
+	public static void	startBefehlNOP(){
+		// Nothing
+		Elementhandlers.myRegister.increaseProgrammcounter();
+		return;
+	}
+	public static void	startBefehlRLF(int f, int d){
+		//TODO: Effected C
+		int fRegister = Elementhandlers.myRegister.getRegisterValue(f);		
+		int result=Integer.rotateLeft(f, 1);
+		//TODO: Viel zu beachten Carrybit und Kreislauf zwischen Register und CarryFlag
+		int zFlag = Elementhandlers.myRegister.getCFlag();
+		insertInRegister(result,f,d);
+		Elementhandlers.myRegister.increaseProgrammcounter();
+		return;
+	}
+	public static void	startBefehlRRF(int f, int d){
+		//TODO: Effected C
+		int fRegister = Elementhandlers.myRegister.getRegisterValue(f);		
+		int result=Integer.rotateRight(f, 1);
+		//TODO: Viel zu beachten Carrybit und Kreislauf zwischen Register und CarryFlag
+		insertInRegister(result,f,d);
+		Elementhandlers.myRegister.increaseProgrammcounter();
+		return;
+	}
+	public static void	startBefehlSUBWF(int f, int d){
+		//TODO: Effected C,DC,Z
+		int fRegister = Elementhandlers.myRegister.getRegisterValue(f);
+		int wRegister = Elementhandlers.myRegister.getWRegister();
+		int result = wRegister - fRegister;
+		insertInRegister(result,f,d);
+		Elementhandlers.myRegister.increaseProgrammcounter();
+		return;
+	}
+	public static void	startBefehlSWAPF(int f, int d){
+		int fRegister = Elementhandlers.myRegister.getRegisterValue(f);
+		String hey =	new StringBuffer(String.valueOf(fRegister)).reverse().toString();
+		int result = Integer.parseInt(hey);		
+		insertInRegister(result,f,d);
+		Elementhandlers.myRegister.increaseProgrammcounter();
+		return;
+	}
+	public static void	startBefehlXORWF(int f, int d){
+		int fRegister = Elementhandlers.myRegister.getRegisterValue(f);
+		int wRegister = Elementhandlers.myRegister.getWRegister();
+		int result = fRegister^wRegister;
+		checkZFlag(result);
+		insertInRegister(result,f,d);
+		Elementhandlers.myRegister.increaseProgrammcounter();
+		return;
+	}
+	public static void	startBefehlBCF(int f, int b){
+		int fRegister = Elementhandlers.myRegister.getRegisterValue(f);
+		int result = 0;
+		switch (b){
+		case 0:
+			result = fRegister & 0b11111110;
+			break;
+		case 1:
+			result = fRegister & 0b11111101;
+			break;
+		case 2:
+			result = fRegister & 0b11111011;
+			break;
+		case 3:
+			result = fRegister & 0b11110111;
+			break;
+		case 4:
+			result = fRegister & 0b11101111;
+			break;
+		case 5:
+			result = fRegister & 0b11011111;
+			break;
+		case 6:
+			result = fRegister & 0b10111111;
+			break;
+		case 7:
+			result = fRegister & 0b01111111;
+			break;
+		default:
+			break;
+		}
+		insertInRegister(result,f,1);
+		Elementhandlers.myRegister.increaseProgrammcounter();
+		return;
+	}
+	public static void	startBefehlBSF(int f, int b){
+		int fRegister = Elementhandlers.myRegister.getRegisterValue(f);
+		int result=0;
+		switch (b){
+		case 0:
+			result = fRegister | 0b00000001;
+			break;
+		case 1:
+			result = fRegister | 0b00000010;
+			break;
+		case 2:
+			result = fRegister | 0b00000100;
+			break;
+		case 3:
+			result = fRegister | 0b00001000;
+			break;
+		case 4:
+			result = fRegister | 0b00010000;
+			break;
+		case 5:
+			result = fRegister | 0b00100000;
+			break;
+		case 6:
+			result = fRegister | 0b01000000;
+			break;
+		case 7:
+			result = fRegister | 0b10000000;
+			break;
+		default:
+			break;
+		}
+		insertInRegister(result,f,1);
+		Elementhandlers.myRegister.increaseProgrammcounter();
+		return;
+	}
+	public static void	startBefehlBTFSC(int f, int b){
+		int fRegister = Elementhandlers.myRegister.getRegisterValue(f);
+		int result=0;
+		switch (b){
+		case 0:
+			result = fRegister & 0b00000001;
+			break;
+		case 1:
+			result = fRegister & 0b00000010;
+			break;
+		case 2:
+			result = fRegister & 0b00000100;
+			break;
+		case 3:
+			result = fRegister & 0b00001000;
+			break;
+		case 4:
+			result = fRegister & 0b00010000;
+			break;
+		case 5:
+			result = fRegister & 0b00100000;
+			break;
+		case 6:
+			result = fRegister & 0b01000000;
+			break;
+		case 7:
+			result = fRegister & 0b10000000;
+			break;
+		default:
+			break;
+		}
+		Elementhandlers.myRegister.increaseProgrammcounter();
+		if (result == 0){
+			startBefehlNOP();
+		}
+		return;
+	}
+	public static void	startBefehlBTFSS(int f, int b){
+		int fRegister = Elementhandlers.myRegister.getRegisterValue(f);
+		int result=0;
+		switch (b){
+		case 0:
+			result = fRegister & 0b00000001;
+			break;
+		case 1:
+			result = fRegister & 0b00000010;
+			break;
+		case 2:
+			result = fRegister & 0b00000100;
+			break;
+		case 3:
+			result = fRegister & 0b00001000;
+			break;
+		case 4:
+			result = fRegister & 0b00010000;
+			break;
+		case 5:
+			result = fRegister & 0b00100000;
+			break;
+		case 6:
+			result = fRegister & 0b01000000;
+			break;
+		case 7:
+			result = fRegister & 0b10000000;
+			break;
+		default:
+			break;
+		}
+		Elementhandlers.myRegister.increaseProgrammcounter();
+		if (result > 0){
+			startBefehlNOP();
+		}		
+		return;
+	}
+	public static void	startBefehlADDLW(int k){
+		//TODO: Effected C,DC,Z
+		int wRegister = Elementhandlers.myRegister.getWRegister();
+		int result = wRegister + k;
+		insertInRegister(result,1337,0);
+		Elementhandlers.myRegister.increaseProgrammcounter();
+		return;
+	}
+	public static void	startBefehlANDLW(int k){
+		int wRegister = Elementhandlers.myRegister.getWRegister();
+		int result = wRegister & k;
+		checkZFlag(result);
+		insertInRegister(result,1337,0);
+		Elementhandlers.myRegister.increaseProgrammcounter();
+		return;
+	}
+	public static void	startBefehlCALL(int klong){
+		//TODO: Call implementieren mit Stack etc (Stack als exrta vom Typ List zur Registerklasse hinzufügen)
+		Elementhandlers.myRegister.increaseProgrammcounter();
+		return;
+	}
+	public static void	startBefehlCLRWDT(){
+		//TODO: Reset des Watchdogtimers
+		Elementhandlers.myRegister.increaseProgrammcounter();
+		return;
+	}
+	public static void	startBefehlGOTO(int klong){
+		//TODO: Goto implementieren
+		Elementhandlers.myRegister.increaseProgrammcounter();
+		return;
+	}
+	public static void	startBefehlIORLW(int k){
+		int wRegister = Elementhandlers.myRegister.getWRegister();
+		int result = wRegister|k;
+		checkZFlag(result);
+		insertInRegister(result,1337,0);
+		Elementhandlers.myRegister.increaseProgrammcounter();
+		return;
+	}
+	public static void	startBefehlMOVLW(int k){
+		//TODO: Don't Cares will assemble as 0 ?
+		int result =k;
+		insertInRegister(result,1337,0);
+		Elementhandlers.myRegister.increaseProgrammcounter();
+		return;
+	}
+	public static void	startBefehlRETFIE(){
+		//TODO: Return from Interrupt
+		return;
+	}
+	public static void	startBefehlRETLW(int f){
+		//TODO: Implement Return (mit Verschiebung in w)
+		return;
+	}
+	public static void	startBefehlRETURN(){
+		//TODO: Implement Return (mit Verschiebung in w)
+		return;
+	}
+	public static void	startBefehlSLEEP(){
+		//TODO: Impelementieren Sleep-Befehl
+		Elementhandlers.myRegister.increaseProgrammcounter();
+		return;
+	}
+	public static void	startBefehlSUBLW(int k){
+		//TODO: Effected C,DC,Z
+		int wRegister = Elementhandlers.myRegister.getWRegister();
+		int result = wRegister - k;
+		insertInRegister(result,1337,0);
+		Elementhandlers.myRegister.increaseProgrammcounter();
+		return;
+	}
+	public static void	startBefehlXORLW(int k){
+		int wRegister = Elementhandlers.myRegister.getWRegister();
+		int result = wRegister^k;
+		checkZFlag(result);
+		insertInRegister(result,1337,0);
+		Elementhandlers.myRegister.increaseProgrammcounter();
+		return;
+	}
+	
+	// Funktion zum Einfügen von Werten abhängig von d in F oder W
+	private static void insertInRegister(int result, int f, int d) {
+		if (d == 0){
+			Elementhandlers.myRegister.setWRegister(result);
+		}
+		if (d == 1){
+			Elementhandlers.myRegister.setRegister(f,result);
+		}
+	return;
+	}
+	private static void checkZFlag(int result){
+		if (result==0){
+			Elementhandlers.myRegister.setZFlag();
+		}
+		if (result<0){
+			Elementhandlers.myRegister.clearZFlag();
+		}
+	}
+}

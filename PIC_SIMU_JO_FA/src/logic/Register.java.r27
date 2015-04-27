@@ -1,0 +1,193 @@
+package logic;
+
+
+import java.util.ArrayDeque;
+import java.util.Deque;
+
+public class Register {
+
+	private int[] speicher= new int[256];
+	private int wRegister;
+	private int programmcounter;
+	private Deque<Integer> myStack = new ArrayDeque<Integer>();
+	
+	public Register(){
+		
+	//init Speicher---------------- Alex meinte hier gibt es noch ein Paar Register die sind zu Anfang nicht null
+	//----------------------------- müssen hier dann noch extra deklariert werden
+	for (int j=0;j<256;j++){
+		this.speicher[j]=0;
+	}
+	this.speicher[0x03]=0x18;
+	this.speicher[0x83]=0x18;
+	this.speicher[0x81]=0xFF;
+	this.speicher[0x85]= 0xFF;
+	this.speicher[0x86]= 0xFF;
+	
+	//init programcounter---------- Zwar in den Registern enthalten, hier ist jezz die Frage ob wir es so Redundant lassen sollen
+	//----------------------------- oder ob wir nur mit Speicher-Array arbeiten sollen
+	this.wRegister=0;
+	this.programmcounter=0;
+	}
+	
+	public void setProgrammcounterByCallAndGoto(int givenPC){
+		int pclath = this.speicher[10];
+		pclath = (Integer.rotateRight(pclath, 3)) & 0b11;
+		pclath = Integer.rotateLeft(pclath, 11);
+		this.programmcounter= pclath | givenPC;
+		int pcl = programmcounter & 0b11111111;
+		int newPclath = (Integer.rotateRight(programmcounter, 8)) & 0b11111;
+		this.speicher[0x2]= pcl;
+		this.speicher[0x82]= pcl;
+		this.speicher[0x10]= newPclath;
+		this.speicher[0x90]= newPclath;
+	}
+	
+	
+	public int getProgrammcounter(){
+		return this.programmcounter;
+	}
+	public int getWRegister(){
+		return this.wRegister;
+	}
+	public void setWRegister(int result){
+		this.wRegister=result;
+	}
+	public void setRegister(int f, int result){
+		f= checkBank(f);
+		boolean doppeltvorhanden = checkRedundanz(f);
+		if (doppeltvorhanden == true){
+			if(f<0x80){ //Bank0 Adresse
+				this.speicher[f]= result;
+				this.speicher[(f+0x80)]=result;
+			}
+			if(f>=0x80){ //Bank 1 Adresse
+				this.speicher[f]= result;
+				this.speicher[(f-0x80)]=result;
+			}
+		}
+		else{
+			this.speicher[f]= result;
+		}
+	}
+	public int getRegisterValue(int f){
+		f= checkBank(f);
+		return this.speicher[f];
+	}
+	public void increaseProgrammcounter(){
+		this.programmcounter++;
+		int pcl = programmcounter & 0b11111111;
+		int pclath = (Integer.rotateRight(programmcounter, 8)) & 0b11111;
+		this.speicher[0x2]= pcl;
+		this.speicher[0x82]= pcl;
+		this.speicher[0xA]= pclath;
+		this.speicher[0x8A]= pclath;
+	}
+
+	public void printRegister() {
+		for  (int j=0; j <128;j++){
+			System.out.println("Register: " + Integer.toHexString(j) + " : " +  Integer.toHexString(speicher[j]));
+			}
+		System.out.println("WRegister: " + wRegister);
+		System.out.println("Programmcounter: " + programmcounter);
+		System.out.println("Stack: " + myStack.toString());
+	}
+	public void setZFlag(){
+			int statusregister= this.speicher[3];
+			int result = statusregister|0b00000100;
+			this.speicher[0x3]= result;
+			this.speicher[0x83]= result;
+
+	}
+	public void clearZFlag(){
+			int statusregister= this.speicher[3];
+			int result = statusregister & 0b11111011;
+			this.speicher[0x3]= result;
+			this.speicher[0x83]= result;
+	}
+	public void setCFlag(){
+			int statusregister= this.speicher[3];
+			int result = statusregister|0b00000001;
+			this.speicher[0x3]= result;
+			this.speicher[0x83]= result;
+	}
+	public int getCFlag(){
+		int statusReg =this.speicher[3];
+		int result= statusReg & 0b00000001;
+		
+		if(result == 0){
+			return 0;	
+		}
+		else{
+		return 1;
+		}		
+	}
+	public void clearCFlag(){
+			int statusregister= this.speicher[3];
+			int result = statusregister & 0b11111110;
+			this.speicher[0x3]= result;
+			this.speicher[0x83]= result;
+		
+	}
+	public void setCDFlag(){
+			int statusregister= this.speicher[3];
+			int result = statusregister|0b00000010;
+			this.speicher[0x3]= result;
+			this.speicher[0x83]= result;
+	}
+	public void clearCDFlag(){
+			int statusregister= this.speicher[3];
+			int result = statusregister & 0b11111101;
+			this.speicher[0x3]= result;
+			this.speicher[0x83]= result;
+	}
+	public void programmCounterToStack(){
+		this.myStack.push(programmcounter+1);
+	}
+	public void setProgrammCounterfromStack(){
+		int jumpbackadress =  (int) this.myStack.pop();
+		setProgrammcounterByCallAndGoto(jumpbackadress);
+	}
+	public int[] getRegisters(){
+		return this.speicher;
+	}
+	private int checkBank(int f){
+		if((this.speicher[3]&0b00100000) <= 0) //Bank 0
+		{
+			if(f<0x80){		//Adresse ist auf Bank 0
+				return f;
+			}
+			if(f>=0x80){	//Adresse ist auf Bank 1 musss aber auf Bank 0 geändert werden da Bank 0 aktiv
+				return (f-0x80);
+			}
+		}
+		if((this.speicher[3]&0b00100000) > 0) //Bank 1
+		{
+			if(f<0x80){		//Adresse ist auf Bank 0 muss aber auf Bank 1 geändert werden da Bank 1 aktiv
+				return (f+0x80);
+			}
+			if(f>=0x80){	//Adresse ist auf Bank 1 
+				return (f);
+			}
+		}
+	return 0;
+	}
+	private boolean checkRedundanz(int f){
+	if(f==0x0|f==0x2|f==0x3|f==0x4|f==0xa|f==0xb|f==0x80|f==0x82|f==0x83|f==0x84|f==0x8a|f==0x8b){
+		return true;// doppelt vorhanden
+	}
+	else{
+		return false; // einfach vorhanden
+		}
+	}
+	
+	public void fromTableToRegister(int inhalt, int adresse){
+		{
+			
+			this.speicher[adresse] = inhalt;
+			//TODO: Programmcounter beachten
+					}
+		}
+	}
+	
+
