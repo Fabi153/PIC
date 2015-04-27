@@ -145,6 +145,33 @@ public class Register {
 		return 1;
 		}		
 	}
+	public int getZFlag(){
+		int statusReg =this.speicher[3];
+		int result= statusReg & 0b00000100;
+		
+		if(result == 0){
+			return 0;	
+		}
+		else{
+		return 1;
+		}		
+	}
+	
+	public int getDCFlag(){
+		int statusReg =this.speicher[3];
+		int result= statusReg & 0b00000010;
+		
+		if(result == 0){
+			return 0;	
+		}
+		else{
+		return 1;
+		}		
+	}
+	
+	
+	
+	
 	public void clearCFlag(){
 			int statusregister= this.speicher[3];
 			int result = statusregister & 0b11111110;

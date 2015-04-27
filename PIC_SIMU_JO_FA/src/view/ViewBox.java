@@ -50,6 +50,9 @@ public class ViewBox extends JFrame{
 	public int[] befehlscode;
 	public static int[] positionInStringArray= new int[0xFFF];
 	public static JLabel lblWregister = new JLabel("W-Register");
+	public static JLabel lblZFlag = new JLabel("Z-Flag");
+	public static JLabel lblCFlag= new JLabel("C-Flag");
+	public static JLabel lblDCFlag = new JLabel("DC-Flag");
 	public Thread aktuellerThread;
 	@SuppressWarnings("rawtypes")
 	public static JList stackList = new JList();
@@ -178,11 +181,23 @@ public class ViewBox extends JFrame{
         scrollPane_1.setViewportView(register_table);
 		
 		
-		lblWregister.setBounds(12, 358, 174, 14);
+		lblWregister.setBounds(12, 360, 119, 14);
 		frame.getContentPane().add(lblWregister);
 		
+		lblZFlag.setBounds(12, 387, 72, 23);
+		frame.getContentPane().add(lblZFlag);
+		
+		
+		lblCFlag.setBounds(12, 406, 72, 23);
+		frame.getContentPane().add(lblCFlag);
+		
+		
+		lblDCFlag.setBounds(12, 423, 72, 23);
+		frame.getContentPane().add(lblDCFlag);
+		
+		
 		JScrollPane scrollPane_2 = new JScrollPane();
-		scrollPane_2.setBounds(12, 393, 130, 171);
+		scrollPane_2.setBounds(12, 471, 130, 171);
 		frame.getContentPane().add(scrollPane_2);
 		
 
@@ -336,6 +351,9 @@ public class ViewBox extends JFrame{
 		
 		
 		scrollPane_4.setViewportView(portB_table);
+		
+		
+		
 		
 		
 		

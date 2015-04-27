@@ -106,9 +106,20 @@ public class Elementhandlers{
 		}
 		ViewBox.register_table.setModel(new DefaultTableModel(rows,columns));
 		
-		// WRegausgeben
+		// WReg ausgeben
 		String wReg= "W-Register :" + Integer.toHexString(Elementhandlers.myRegister.getWRegister());
 		ViewBox.lblWregister.setText(wReg);
+		
+		//Flags ausgeben
+		String zFlag= "Z-Flag :" + Elementhandlers.myRegister.getZFlag();
+		ViewBox.lblZFlag.setText(zFlag);
+		
+		String cFlag= "C-Flag :" + Elementhandlers.myRegister.getCFlag();
+		ViewBox.lblCFlag.setText(cFlag);
+		
+		String dcFlag= "DC-Flag :" + Elementhandlers.myRegister.getDCFlag();
+		ViewBox.lblDCFlag.setText(dcFlag);
+		
 		// Stack ausgeben
 		final Object[] stack = Elementhandlers.myRegister.getStack();
 		@SuppressWarnings({ "serial", "rawtypes", "unchecked" })
